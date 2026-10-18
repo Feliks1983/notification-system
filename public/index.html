@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Notifications System</title>
+    <link rel="shortcut icon" href="favicon.svg">
+    <style>
+      :root {
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          sans-serif;
+        color: #172033;
+        background: #f4f6fb;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .wrap {
+        max-width: 980px;
+        margin: 40px auto;
+        padding: 0 18px;
+      }
+      .hero {
+        background: #172554;
+        color: white;
+        border-radius: 20px;
+        padding: 28px 30px;
+        margin-bottom: 18px;
+      }
+      .hero h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+      }
+      .hero p {
+        margin: 0;
+        color: #dbeafe;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        gap: 18px;
+      }
+      .panel {
+        background: white;
+        border: 1px solid #e4e8f1;
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 8px 24px #16213e08;
+      }
+      .panel h2 {
+        font-size: 18px;
+        margin: 0 0 16px;
+      }
+      label {
+        display: block;
+        font-size: 13px;
+        font-weight: 650;
+        margin: 12px 0 6px;
+      }
+      input,
+      textarea,
+      select {
+        width: 100%;
+        border: 1px solid #d7ddea;
+        border-radius: 9px;
+        padding: 10px 11px;
+        font: inherit;
+        background: white;
+      }
+      textarea {
+        min-height: 90px;
+        resize: vertical;
+      }
+      button {
+        border: 0;
+        border-radius: 9px;
+        padding: 10px 13px;
+        background: #3157d5;
+        color: white;
+        font-weight: 650;
+        cursor: pointer;
+        margin-top: 12px;
+      }
+      button.secondary {
+        background: #edf1ff;
+        color: #2446b4;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .row button {
+        margin-top: 0;
+      }
+      .muted {
+        color: #647089;
+        font-size: 13px;
+        overflow-wrap: anywhere;
+      }
+      .status {
+        font-size: 13px;
+        margin-top: 10px;
+        white-space: pre-wrap;
+      }
+      .counter {
+        display: inline-flex;
+        background: #e8edff;
+        color: #2446b4;
+        border-radius: 99px;
+        padding: 5px 10px;
+        font-weight: 700;
+        font-size: 13px;
+      }
+      .list {
+        display: grid;
+        gap: 10px;
+      }
+      .notice {
+        border: 1px solid #e5e9f2;
+        border-radius: 12px;
+        padding: 14px;
+      }
+      .notice.unread {
+        border-left: 4px solid #3157d5;
+      }
+      .notice-head {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .tag {
+        font-size: 11px;
+        font-weight: 750;
+        letter-spacing: 0.04em;
+        background: #eef2ff;
+        color: #3349a7;
+        padding: 4px 7px;
+        border-radius: 6px;
+      }
+      .notice h3 {
+        font-size: 15px;
+        margin: 10px 0 5px;
+      }
+      .notice p {
+        font-size: 14px;
+        line-height: 1.5;
+        margin: 0 0 8px;
+        white-space: pre-wrap;
+      }
+      .notice small {
+        color: #758098;
+      }
+      .notice button {
+        font-size: 12px;
+        padding: 7px 9px;
+      }
+      .empty {
+        padding: 30px;
+        text-align: center;
+        color: #7a8498;
+        border: 1px dashed #d6dce8;
+        border-radius: 12px;
+      }
+      .token {
+        font-size: 11px;
+        word-break: break-all;
+        background: #f5f7fc;
+        padding: 10px;
+        border-radius: 8px;
+        max-height: 90px;
+        overflow: auto;
+      }
+      .hidden {
+        display: none;
+      }
+      @media (max-width: 720px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        .wrap {
+          margin: 20px auto;
+        }
+        .hero {
+          padding: 22px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header class="hero">
+        <h1>Центр уведомлений</h1>
+        <p>MongoDB · Express · JWT · Socket.IO</p>
+      </header>
+      <div class="grid">
+        <aside>
+          <section class="panel">
+            <h2>1. Вход</h2>
+            <form id="loginForm">
+              <label for="username">Имя пользователя</label
+              ><input id="username" value="" maxlength="40" required /><button type="submit">
+                Войти
+              </button>
+            </form>
+            <div id="loginStatus" class="status muted">Войдите, чтобы начать.</div>
+            <div id="tokenWrap" class="hidden">
+              <label>JWT-токен</label>
+              <div id="token" class="token"></div>
+              <div class="muted" id="userInfo"></div>
+            </div>
+            <div class="row" style="margin-top: 12px">
+              <span id="socketState" class="muted">Socket: отключён</span
+              ><span id="unreadCount" class="counter">Непрочитано: 0</span>
+            </div>
+            <button id="logoutBtn" class="secondary" type="button" disabled>Выйти</button>
+          </section>
+          <section class="panel" style="margin-top: 18px">
+            <h2>2. Создать уведомление</h2>
+            <form id="createForm">
+              <label for="type">Тип</label
+              ><select id="type">
+                <option>INFO</option>
+                <option>WARNING</option>
+                <option>ORDER</option>
+                <option>SYSTEM</option></select
+              ><label for="title">Заголовок</label
+              ><input id="title" value="Hello" maxlength="160" required /><label for="body"
+                >Текст</label
+              ><textarea id="body" required>This is your first notification</textarea
+              ><button type="submit" disabled id="createBtn">Создать уведомление</button>
+            </form>
+            <div id="createStatus" class="status muted"></div>
+          </section>
+        </aside>
+        <section class="panel">
+          <div class="row" style="justify-content: space-between; margin-bottom: 16px">
+            <h2 style="margin: 0">3. История</h2>
+            <div class="row">
+              <select id="filter" aria-label="Фильтр">
+                <option value="false">Все</option>
+                <option value="true">Только непрочитанные</option></select
+              ><button id="loadBtn" class="secondary" disabled>Загрузить</button>
+            </div>
+          </div>
+          <div id="notifications" class="list">
+            <div class="empty">Сначала войдите в систему.</div>
+          </div>
+        </section>
+      </div>
+    </main>
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>
